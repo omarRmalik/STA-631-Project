@@ -1,0 +1,67 @@
+---
+title: "ASHRAE Energy Prediction"
+output: html_notebook
+---
+
+## Reading in data files
+
+```{r, message = FALSE}
+
+library(tidyverse)
+
+building <- read_csv("building_metadata.csv")
+
+weather_train <- read_csv("weather_train.csv")
+
+weather_test <- read_csv("weather_test.csv")
+
+train <- read_csv("train.csv")
+
+test <- read_csv("test.csv")
+
+summary(building)
+dim(building)
+summary(weather_train)
+summary(train)
+dim(train)
+dim(weather_train)
+summary(test)
+dim(test)
+
+```
+
+## Prepare the training dataset
+
+```{r}
+
+training_dataset <- train %>%
+  left_join(building, by = "building_id")
+
+training_dataset <- training_dataset %>%
+  left_join(weather_train, by = c("site_id", "timestamp"))
+  
+```
+## Prepare the testing dataset
+
+```{r}
+testing_dataset <- test %>%
+  left_join(building, by = "building_id")
+
+testing_dataset <- testing_dataset %>%
+  left_join(weather_test, by = c("site_id", "timestamp"))
+```
+
+## Examine the training dataset
+
+```{r}
+dim(training_dataset)
+summary(training_dataset)
+```
+## Examine the test dataset
+
+```{r}
+dim(testing_dataset)
+summary(testing_dataset)
+```
+
+
