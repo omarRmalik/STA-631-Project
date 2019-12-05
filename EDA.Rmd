@@ -1,6 +1,8 @@
 ---
 title: "Exploratory analysis"
-output: html_notebook
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 
 ## Attach packages
@@ -24,7 +26,7 @@ summary(daily_data)
 ## Examine distributions
 
 ```{r}
-numeric <- daily_data[,3:13]
+numeric <- daily_data[,3:10]
 multi.hist(numeric)
 ```
 
@@ -77,4 +79,70 @@ wind_speed <- ggplot(daily_data, aes(x = wind_speed, y = meter_reading, colour =
 wind_speed
 ```
 No relationship between wind speed and meter reading.
+
+## Look at the Building related variables
+
+```{r}
+building_vars <- readRDS("building_vars.rds")
+summary(building_vars)
+dim(building_vars)
+```
+```{r}
+building_vars$primary_use <- as.factor(building_vars$primary_use)
+summary(building_vars$primary_use)
+meter_log <- log(building_vars$meter_reading)
+use <- ggplot(building_vars, aes(x = primary_use, y = meter_log)) + geom_boxplot() +
+   stat_summary(fun.y=mean, colour="darkred", geom="point", 
+               shape=18, size=3)
+use + theme(axis.text.x = element_text(angle = 40, hjust = 1))
+```
+Not much of a difference in means. I logged meter readings because they are so strongly right skewed. I could not see a trend if I did not log them. No relationship between use of building and meter reading.
+
+
+Now, lets look at the area of the buildings. Again this variable is highly right-skewed. I'm going to log it.
+```{r}
+hist(building_vars$square_feet)
+```
+```{r}
+area_log <- log(building_vars$square_feet)
+hist(area_log)
+```
+looks much better! 
+
+```{r}
+plot(area_log, meter_log)
+```
+Nothing going on here! There is no relationship between area and meter readings. 
+
+
+```{r}
+building_vars$year_built <- as.factor(building_vars$year_built)
+summary(building_vars$year_built)
+meter_log <- log(building_vars$meter_reading)
+year <- ggplot(building_vars, aes(x = year_built, y = meter_log)) + geom_boxplot() + stat_summary(fun.y=mean, colour="darkred", geom="point", shape=18, size=3)
+year + theme(axis.text.x = element_text(size = 5, angle = 90, hjust = 1))
+```
+There is some variation but not much of a trend. It almost seems random. Surprisingly, the newer buildings are not using less energy!!
+
+Now lets look at floor count!
+
+```{r}
+hist(building_vars$floor_count)
+```
+```{r}
+table(building_vars$floor_count)
+```
+High number of 1 storey buildings. Lets cut this into a factor with 1 storey, 2 storey, 3 to 9 storey and more than 9 storey buildings. That looks like a natural grouping to me looking at the histogram. 
+
+```{r}
+cut_storey <- cut(building_vars$floor_count, breaks = c(1, 2, 3, 9, 26))
+
+summary(cut_storey)
+cut_storey <- as.factor(cut_storey)
+plot(cut_storey, meter_log)
+
+```
+Not much of a difference in the medians!
+
+Main conclusion: My EDA does not show any strong relationships between the predictors and the target in this dataset. 
 
