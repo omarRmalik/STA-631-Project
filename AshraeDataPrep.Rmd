@@ -1,0 +1,123 @@
+---
+title: "ASHRAE Energy Prediction - Data preparation and reduction"
+output: html_notebook
+---
+
+## Reading in data files
+
+```{r, message = FALSE}
+
+library(tidyverse)
+
+building <- read_csv("building_metadata.csv")
+
+weather_train <- read_csv("weather_train.csv")
+
+weather_test <- read_csv("weather_test.csv")
+
+train <- read_csv("train.csv")
+
+test <- read_csv("test.csv")
+
+```
+
+## Prepare the training dataset
+
+```{r}
+
+training_dataset <- train %>%
+  left_join(building, by = "building_id")
+
+training_dataset <- training_dataset %>%
+  left_join(weather_train, by = c("site_id", "timestamp"))
+  
+```
+## Prepare the testing dataset
+
+```{r}
+testing_dataset <- test %>%
+  left_join(building, by = "building_id")
+
+testing_dataset <- testing_dataset %>%
+  left_join(weather_test, by = c("site_id", "timestamp"))
+```
+
+## Examine the training dataset
+
+```{r}
+dim(training_dataset)
+summary(training_dataset)
+```
+## Examine the test dataset
+
+```{r}
+dim(testing_dataset)
+summary(testing_dataset)
+```
+
+## Examine frequency of meter recordings
+
+```{r}
+training_dataset$date <- as.Date(training_dataset$timestamp)
+training_dataset %>% 
+  group_by(date) %>%
+  tally()
+
+```
+
+There is a large number of daily readings. These are all serially correlated. Hence, it would make sense to group by date and meter type. Since, a building can have multiple meter types. 
+
+## Aggregate data by day and meter type
+```{r}
+daily_data <- training_dataset %>%
+  group_by(date, meter) %>%
+  summarise(air_temperature = mean(air_temperature, na.rm = TRUE),
+            cloud_coverage = mean(cloud_coverage, na.rm = TRUE),
+            dew_temperature = mean(dew_temperature, na.rm = TRUE),
+            precip_depth_1_hr = mean(precip_depth_1_hr, na.rm = TRUE),
+            sea_level_pressure = mean(sea_level_pressure, na.rm = TRUE),
+            wind_direction = mean(wind_direction, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            meter_reading = mean(meter_reading, na.rm = TRUE))
+```
+## Examine the reduced data
+
+```{r}
+dim(daily_data)
+1464/20000000 * 100
+
+```
+We have reduced this dataset to 1464 rows and 10 weather columns. .007% of its original size. Now we can examine relationships between the variables. Our assumption is that since the means and medians for the predictors are very close in the large dataset, reducing it in this way still preserves the essential signal in the data. 
+
+## Save the reduced datafile
+```{r}
+saveRDS(daily_data, "daily_data.rds")
+
+```
+# variables that do not change
+
+We have to separate out these variables because taking their averages makes no sense!
+```{r}
+building_vars <- training_dataset %>%
+  select(building_id, primary_use, square_feet, year_built, floor_count)
+  
+building_vars <- distinct(building_vars, building_id, .keep_all = TRUE)
+
+```
+
+```{r}
+add_target <- training_dataset %>%
+  group_by(building_id) %>%
+  summarise(meter_reading_avg = mean(meter_reading, na.rm = TRUE))
+
+cbind(meter_reading = add_target$meter_reading_avg, building_vars)
+```
+
+## save the building variables file
+
+```{r}
+saveRDS(building_vars, "building_vars.rds")
+```
+
+Now we have two reduced datafiles. One has the weather data and the other one building related variables and the average meter reading for that building. We can use these to do an exploratory analysis and see which variables are related to the target. 
+

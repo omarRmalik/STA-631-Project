@@ -1,0 +1,80 @@
+---
+title: "Exploratory analysis"
+output: html_notebook
+---
+
+## Attach packages
+```{r, message = FALSE}
+library(tidyverse)
+library(caret)
+library(psych)
+library(BioStatR)
+library(car)
+library(lattice)
+```
+
+## Load the datafile
+
+```{r}
+daily_data <- readRDS("daily_data.rds")
+summary(daily_data)
+
+```
+
+## Examine distributions
+
+```{r}
+numeric <- daily_data[,3:13]
+multi.hist(numeric)
+```
+
+The target variable (meter_reading) is heavily right-skewed. cloud_coverage and precip_depth_1_hr are also right-skewed. 
+
+## Examine scatterplots
+```{r}
+air_temp <- ggplot(daily_data, aes(x = air_temperature, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+air_temp
+
+```
+
+There are outliers but for the most part there is not much of a linear relationship between air_temperature and meter_reading. meter type 3 does show a stronger linear relationship than the other two meter types.
+
+
+```{r}
+cloud_cover <- ggplot(daily_data, aes(x = cloud_coverage, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+cloud_cover
+
+```
+cloud_coverage does not have a clear linear relationship with meter reading except for meter 3.
+
+```{r}
+dew_temp <- ggplot(daily_data, aes(x = dew_temperature, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+dew_temp
+
+```
+We see the same trend in dew temperature as the earlier two temperature variables. There is not much of a linear relationship, except for meter 3.
+
+```{r}
+precip_depth <- ggplot(daily_data, aes(x = precip_depth_1_hr, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+precip_depth
+```
+Precip_depth_1_hr does not have any relationship with meter reading. Even meter 3 is all over the place.
+
+```{r}
+sea_pressure <- ggplot(daily_data, aes(x = sea_level_pressure, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+sea_pressure
+```
+sea_level pressure has no relationship with meter reading for all meter types.
+
+```{r}
+wind_direction <- ggplot(daily_data, aes(x = wind_direction, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+wind_direction
+```
+No relationship between wind direction and meter reading. meter 3 is all over the place!
+
+```{r}
+wind_speed <- ggplot(daily_data, aes(x = wind_speed, y = meter_reading, colour = meter)) + geom_point()+geom_smooth(method= lm)
+wind_speed
+```
+No relationship between wind speed and meter reading.
+
