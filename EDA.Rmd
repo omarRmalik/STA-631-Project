@@ -11,6 +11,7 @@ library(psych)
 library(BioStatR)
 library(car)
 library(lattice)
+library(lubridate)
 ```
 
 ## Load the datafile
@@ -18,8 +19,12 @@ library(lattice)
 ```{r}
 daily_data <- readRDS("daily_data.rds")
 summary(daily_data)
+```
+
+```{r}
 
 ```
+
 
 ## Examine distributions
 
