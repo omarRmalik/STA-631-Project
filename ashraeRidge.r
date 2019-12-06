@@ -56,8 +56,7 @@ kfoldVanillaTest <- function(daily_dataDate,k=8){
 
 kfoldRidgeTest <- function(daily_dataDate,k=8,lambda=0.0){
   #kfold tester for the ridge regression
-  #tests all lambdas between 0 & 10 at a .2 increment
-  #returns a ggplot of the mse's by lambda
+  #returns mse
   sliceSize <- nrow(daily_dataDate)/k
   mse <- 0
   for(i in seq(0,k-1)){

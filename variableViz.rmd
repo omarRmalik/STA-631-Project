@@ -1,0 +1,38 @@
+---
+title: "data exploration"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+source('ashraeRidge.r')
+```
+
+```{r}
+daily_data <- readRDS("daily_data.rds")
+daily_data <- daily_data %>% ungroup()
+daily_dataDate <- addDayOfYear(daily_dataDate)
+```
+
+```{r}
+for(col in daily_dataDate %>% select(air_temperature:dayOfYear,-meter_reading)%>% colnames()){
+  for(i in seq(0,3)){
+    print(daily_dataDate%>%
+    filter(meter==i)%>%
+    ggplot(aes_string(x=col,y='meter_reading'))+
+      geom_point()+
+      geom_smooth()+
+      ggtitle(paste(col,i,sep=' '))
+    
+    )
+  }
+}
+```
+```{r}
+
+```
+
