@@ -23,7 +23,8 @@ for(col in daily_dataDate %>% select(air_temperature:dayOfYear,-meter_reading)%>
   for(i in seq(0,3)){
     print(daily_dataDate%>%
     filter(meter==i)%>%
-    ggplot(aes_string(x=col,y='meter_reading'))+
+    mutate(logMR = log(meter_reading))%>%
+    ggplot(aes_string(x=col,y='logMR'))+
       geom_point()+
       geom_smooth()+
       ggtitle(paste(col,i,sep=' '))

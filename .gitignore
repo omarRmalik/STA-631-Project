@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+trainSS.csv
+testSS.csv
+weather_trainSS.csv
+weather_testSS.csv
+building_metadataSS.csv

@@ -1,0 +1,64 @@
+---
+title: "subsetAnalysis"
+author: "adam"
+date: "12/8/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+source("ashraeRidge.r")
+```
+{0: electricity, 1: chilledwater, 2: steam, 3: hotwater}
+```{r}
+#test = read_csv('testSS.csv')
+train = read_csv('trainSS.csv')
+#weather_test = read_csv('weather_testSS.csv')
+weather_train = read_csv('weather_trainSS.csv')
+buildings = read_csv('building_metadataSS.csv')
+```
+
+```{r}
+trainJoined <- train %>%
+  left_join(buildings, by = 'building_id')%>%
+  left_join(weather_train, by = c('site_id','timestamp'))%>%
+  rename(row=`X1.x`,building_row=`X1.y`,weather_row=X1)%>%
+  mutate(dayOfYear=yday(timestamp))
+
+#testJoined <- test %>%
+#  left_join(buildings, by = 'building_id')%>%
+#  left_join(weather_test, by = c('site_id','timestamp'))%>%
+#  rename(row=`X1.x`,building_row=`X1.y`,weather_row=X1)%>%
+#  mutate(dayOfYear=yday(timestamp))
+```
+
+```{r}
+
+mod0 = lm(meter_reading~square_feet+year_built+floor_count+air_temperature+cloud_coverage+dew_temperature+precip_depth_1_hr+sea_level_pressure+wind_direction+wind_speed+dayOfYear,trainJoined%>%filter(meter==0))
+
+mod1 = lm(meter_reading~square_feet+floor_count+air_temperature+cloud_coverage+dew_temperature+precip_depth_1_hr+sea_level_pressure+wind_direction+wind_speed+dayOfYear,trainJoined%>%filter(meter==1))
+
+mod2 = lm(meter_reading~square_feet+year_built+air_temperature+cloud_coverage+dew_temperature+precip_depth_1_hr+sea_level_pressure+wind_direction+wind_speed+dayOfYear,trainJoined%>%filter(meter==2))
+
+mod3 = lm(meter_reading~square_feet+floor_count+air_temperature+cloud_coverage+dew_temperature+precip_depth_1_hr+sea_level_pressure+wind_direction+wind_speed+dayOfYear,trainJoined%>%filter(meter==3))
+
+```
+```{r}
+summary(mod0)$adj.r.squared
+summary(mod1)$adj.r.squared
+summary(mod2)$adj.r.squared
+summary(mod3)$adj.r.squared
+
+```
+The adjusted R-squared for all 4 meter types. As many variables as possible were used for each model, though not every variable was used for every model since some had only null values for year_built and floor_count. 
+Electricity has an incredible adjRsq, steam and hot water have a decent value, and cold water performs poorly. 
+
+```{r}
+trainJoined%>%colnames()
+```
+
+

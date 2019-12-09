@@ -19,3 +19,11 @@ ggplot(data=NULL, aes(x=lambdas,y=mses))+
   geom_point()+
   geom_line()+
   geom_point(data=NULL,aes(x=c(0),y=c(vanmse)),color='red')
+
+for(i in seq(0,4)){
+mod <- daily_dataDate%>% 
+    filter(meter==i) %>%
+    buildRidgeModel()
+
+  summary(mod)$adj
+}
