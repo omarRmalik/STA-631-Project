@@ -28,12 +28,18 @@ trainJoined <- train %>%
   left_join(weather_train, by = c('site_id','timestamp'))%>%
   rename(row=`X1.x`,building_row=`X1.y`,weather_row=X1)%>%
   mutate(dayOfYear=yday(timestamp))
-
+rm(train)
+rm(weather_train)
+#
 #testJoined <- test %>%
 #  left_join(buildings, by = 'building_id')%>%
 #  left_join(weather_test, by = c('site_id','timestamp'))%>%
 #  rename(row=`X1.x`,building_row=`X1.y`,weather_row=X1)%>%
 #  mutate(dayOfYear=yday(timestamp))
+#
+#rm(test)
+#rm(weather_test)
+#rm(buildings)
 ```
 
 ```{r}
@@ -58,7 +64,35 @@ The adjusted R-squared for all 4 meter types. As many variables as possible were
 Electricity has an incredible adjRsq, steam and hot water have a decent value, and cold water performs poorly. 
 
 ```{r}
-trainJoined%>%colnames()
+rmse = function(mod, obj){
+  preds <- predict(mod,obj)
+  tot <- 0
+  cnt <- 0
+  for(i in seq(1,length(preds))){
+    if(!is.na(preds[i])){
+      tot <- tot+ ((preds[i] - obj$meter_reading[i])^2)
+      cnt <- cnt +1
+    }
+  }
+  print(cnt)
+  sqrt(tot/cnt)
+}
+rmse0 <- rmse(mod0,trainJoined%>%filter(meter==0))
+rmse1 <- rmse(mod1,trainJoined%>%filter(meter==1))
+rmse2 <- rmse(mod2,trainJoined%>%filter(meter==2))
+rmse3 <- rmse(mod3,trainJoined%>%filter(meter==3))
 ```
+
+```{r}
+rmse0
+rmse1
+rmse2
+rmse3
+```
+```{r}
+#predict(mod0,trainJoined%>%filter(meter==0))
+(trainJoined%>% filter(meter==0))$meter_reading
+```
+
 
 

@@ -1,0 +1,67 @@
+---
+title: "steamAnalysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+steam <- read_csv("trainSteam.csv")
+buildings <- read_csv("buildingSteam.csv")
+```
+
+```{r}
+jnd <- steam %>%
+  left_join(buildings, by='building_id')
+```
+
+```{r}
+hist(steam$meter_reading)
+```
+Something's clearly wacky
+```{r}
+jnd %>%
+  filter(meter_reading>500000)%>%
+  distinct(building_id)
+```
+building 1099 is the only one with any values overr 500000 
+
+
+```{r}
+jnd %>% 
+  filter(building_id==1099)%>%
+  ggplot(aes(x=timestamp, y=meter_reading))+
+  geom_line()
+```
+```{r}
+jnd %>% 
+  filter(building_id==1099)%>%
+  summarise(mean(meter_reading))
+```
+
+```{r}
+jnd %>%
+  filter(building_id != 1099999)%>%
+  summarise(mean(meter_reading))
+```
+```{r}
+jnd %>% distinct(building_id)%>% nrow()
+```
+
+```{r}
+train1099 <- read_csv("train1099.csv")
+```
+
+```{r}
+train1099 %>%
+  filter(meter!=2)%>%
+  ggplot(aes(x=timestamp,y=meter_reading,color=meter))+
+  geom_line()
+```
+
